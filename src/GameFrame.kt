@@ -1,7 +1,5 @@
-import java.awt.Color
-import java.awt.Dimension
-import java.awt.Font
-import java.awt.GridLayout
+
+import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import javax.swing.*
@@ -9,8 +7,6 @@ import javax.swing.*
 /**
  * The Sudoku game UI built using java swing.
  */
-//This is a primary constructor. To make it private add 'private constructor' after GramFrame
-
 class GameFrame(sudokuGame: SudokuGame) : JFrame() {
 
     // 9x9 matrix of JTextFields, each containing String "1" to "9", or empty String
@@ -18,7 +14,21 @@ class GameFrame(sudokuGame: SudokuGame) : JFrame() {
 
     init {
         val cp = contentPane
-        cp.layout = GridLayout(3, 3)
+
+        cp.add(createSudokuPanel(sudokuGame), BorderLayout.NORTH)
+        cp.add(createButtonPanel(), BorderLayout.SOUTH)
+
+        pack()
+
+        defaultCloseOperation = JFrame.EXIT_ON_CLOSE  // Handle window closing
+        title = "Sudoku"
+        isVisible = true
+    }
+
+    private fun createSudokuPanel(sudokuGame: SudokuGame): JPanel {
+        val sudokuPanel = JPanel()
+
+        sudokuPanel.layout = GridLayout(3, 3)
 
         val listener = InputListener(sudokuGame, this)
 
@@ -31,19 +41,45 @@ class GameFrame(sudokuGame: SudokuGame) : JFrame() {
                 panels[row][col] = panel
                 // Construct 9x9 JTextFields and add to the content-pane
                 createBoard(panel, sudokuGame, listener, row * 3, row * 3 + 3, col * 3, col * 3 + 3)
-                cp.add(panel)
+                sudokuPanel.add(panel)
             }
         }
 
         // Set the size of the content-pane and pack all the components under this container.
-        cp.preferredSize = Dimension(CANVAS_WIDTH, CANVAS_HEIGHT)
-        pack()
+        sudokuPanel.preferredSize = Dimension(CANVAS_WIDTH, CANVAS_HEIGHT)
 
-        defaultCloseOperation = JFrame.EXIT_ON_CLOSE  // Handle window closing
-        title = "Sudoku"
-        isVisible = true
+        return sudokuPanel
     }
 
+    fun createButtonPanel(): JPanel{
+        val buttonPanel = JPanel()
+        val button = JButton("Start")
+        buttonPanel.add(button)
+
+        button.addActionListener {
+            // everything in here will be called when the button is clicked.
+            contentPane.removeAll()
+            contentPane.add(createSudokuPanel(SudokuGame()), BorderLayout.NORTH)
+            contentPane.add(buttonPanel, BorderLayout.SOUTH)
+
+            contentPane.repaint()
+            pack()
+
+        }
+
+        return buttonPanel
+    }
+
+
+    // Add this new panel to the content pane in the init{} block.
+
+    // ## STEP_10 ## Add an action listener to the button created in "createButtonPanel()" function. Place inside the
+    // block the code to remove the 2 panels from the content pane and add new ones. When calling createSudokuPanel()
+    // make sure you create a new SudokuGame instance in order to get a completely new game.
+    // You have to call
+    // contentPane.repaint()
+    // pack()
+    // in order to refresh the UI.
 
     private fun createBoard(panel: JPanel, sudokuGame: SudokuGame, listener: InputListener, rowStart: Int, rowEnd: Int, colStart: Int, colEnd: Int) {
         panel.layout = GridLayout(3, 3)
@@ -57,7 +93,7 @@ class GameFrame(sudokuGame: SudokuGame) : JFrame() {
                     cells[row][col]?.background = HIDDEN_NUMBER_CELL_BGCOLOR
                     cells[row][col]?.addActionListener(listener);   // For all editable rows and cols
                 } else {
-                    cells[row][col]?.text = sudokuGame.sodukoBoard[row][col].toString() + ""
+                    cells[row][col]?.text = sudokuGame.sudokuBoard[row][col].toString() + ""
                     cells[row][col]?.isEditable = false
                     cells[row][col]?.background = VISIBLE_NUMBER_CELL_BGCOLOR
                     cells[row][col]?.foreground = VISIBLE_NUMBER_CELL_TEXT
